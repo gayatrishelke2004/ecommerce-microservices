@@ -21,7 +21,6 @@ spec:
     spec:
       containers:
       - name: product-service
-
         image: YOUR_DOCKERHUB_USERNAME/product-service:v1
 
         ports:
