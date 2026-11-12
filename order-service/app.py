@@ -1,12 +1,30 @@
 from flask import Flask, request, jsonify
-from pymongo import MongoClient
+import mysql.connector
+import os
 
 app = Flask(__name__)
 
-client = MongoClient("mongodb://mongodb-service:27017/")
-db = client["ecommerce"]
+db = mysql.connector.connect(
+    host="mysql-service",
+    user="root",
+    password="root123",
+    database="ecommerce"
+)
 
-orders = db.orders
+cursor = db.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    product_name VARCHAR(255),
+    quantity INT,
+    status VARCHAR(50)
+)
+""")
+
+db.commit()
+
 
 @app.route("/")
 def home():
@@ -15,33 +33,55 @@ def home():
         "status": "Running"
     })
 
+
 @app.route("/orders", methods=["POST"])
 def create_order():
 
     data = request.json
 
-    order = {
-        "user_id": data["user_id"],
-        "product_name": data["product_name"],
-        "quantity": data["quantity"],
-        "status": "Placed"
-    }
+    sql = """
+    INSERT INTO orders
+    (user_id, product_name, quantity, status)
+    VALUES (%s,%s,%s,%s)
+    """
 
-    orders.insert_one(order)
+    values = (
+        data["user_id"],
+        data["product_name"],
+        data["quantity"],
+        "PLACED"
+    )
+
+    cursor.execute(sql, values)
+    db.commit()
 
     return jsonify({
         "message": "Order Created Successfully"
     })
 
+
 @app.route("/orders", methods=["GET"])
 def get_orders():
 
-    order_list = []
+    cursor.execute(
+        "SELECT user_id, product_name, quantity, status FROM orders"
+    )
 
-    for order in orders.find({}, {"_id": 0}):
-        order_list.append(order)
+    rows = cursor.fetchall()
 
-    return jsonify(order_list)
+    result = []
+
+    for row in rows:
+
+        result.append({
+            "user_id": row[0],
+            "product_name": row[1],
+            "quantity": row[2],
+            "status": row[3]
+        })
+
+    return jsonify(result)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

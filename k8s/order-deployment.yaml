@@ -3,8 +3,6 @@ kind: Deployment
 
 metadata:
   name: order-deployment
-  labels:
-    app: order-service
 
 spec:
   replicas: 2
@@ -28,5 +26,5 @@ spec:
         - containerPort: 5000
 
         env:
-        - name: MONGO_URI
-          value: mongodb://mongodb-service:27017/
+        - name: MYSQL_HOST
+          value: mysql-service
