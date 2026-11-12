@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: product-deployment
+  labels:
+    app: product-service
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: product-service
+
+  template:
+    metadata:
+      labels:
+        app: product-service
+
+    spec:
+      containers:
+      - name: product-service
+
+        image: YOUR_DOCKERHUB_USERNAME/product-service:v1
+
+        ports:
+        - containerPort: 5000
+
+        env:
+        - name: MONGO_URI
+          value: mongodb://mongodb-service:27017/

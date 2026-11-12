@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: recommendation-deployment
+  labels:
+    app: recommendation-service
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: recommendation-service
+
+  template:
+    metadata:
+      labels:
+        app: recommendation-service
+
+    spec:
+      containers:
+      - name: recommendation-service
+
+        image: YOUR_DOCKERHUB_USERNAME/recommendation-service:v1
+
+        ports:
+        - containerPort: 5000
+
+        env:
+        - name: MONGO_URI
+          value: mongodb://mongodb-service:27017/
